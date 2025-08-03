@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IMARORO WARD RESIDENTS FORUM</title>
+  <link rel="stylesheet" href="style.css"/>
+  <script defer src="js/firebase.js"></script>
+  <script defer src="js/cloudinary.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header>
+    <h1>IMARORO Forum</h1>
+    <button id="darkToggle">🌙</button>
+  </header>
+
+  <main>
+    <section id="authSection" class="center">
+      <h2>Login or Sign Up</h2>
+      <input type="text" id="firstName" placeholder="First Name" />
+      <input type="text" id="secondName" placeholder="Second Name" />
+      <input type="text" id="phoneOrEmail" placeholder="Phone Number or Email" />
+      <input type="password" id="password" placeholder="Password" />
+      <button id="signUpBtn">Sign Up</button>
+      <button id="loginBtn">Login</button>
+    </section>
+
+    <section id="forumSection" class="hidden">
+      <div class="profile-bar">
+        <img id="profilePic" src="default-profile.png" alt="Profile" />
+        <span id="usernameDisplay"></span>
+        <button id="logoutBtn">Logout</button>
+      </div>
+
+      <div class="post-creator">
+        <textarea id="postContent" placeholder="What's on your mind?"></textarea>
+        <input type="file" id="mediaUpload" accept="image/*,video/*"/>
+        <button id="submitPost">Post</button>
+      </div>
+
+      <div id="postFeed">
+        <!-- Posts will load here -->
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>© 2025 IMARORO WARD FORUM</p>
+  </footer>
+</body>
+</html>
