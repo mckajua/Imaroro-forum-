@@ -1,104 +1,124 @@
 // script.js
-import { database, ref, push, onValue, auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "./firebase.js";
-import { uploadToCloudinary } from "./cloudinary.js";
+import {
+  db,
+  ref,
+  push,
+  onValue,
+  auth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut
+} from './firebase.js';
+import { uploadToCloudinary } from './cloudinary.js';
 
-// Elements
 const authSection = document.getElementById("authSection");
 const forumSection = document.getElementById("forumSection");
+const signUpBtn = document.getElementById("signUpBtn");
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
 const postInput = document.getElementById("postInput");
 const mediaInput = document.getElementById("mediaInput");
 const postBtn = document.getElementById("postBtn");
 const postsContainer = document.getElementById("postsContainer");
-const logoutBtn = document.getElementById("logoutBtn");
-const firstNameInput = document.getElementById("firstName");
-const secondNameInput = document.getElementById("secondName");
-const phoneOrEmailInput = document.getElementById("phoneOrEmail");
-const passwordInput = document.getElementById("password");
-const signUpBtn = document.getElementById("signUpBtn");
-const loginBtn = document.getElementById("loginBtn");
 
-// Sign Up
-signUpBtn.addEventListener("click", () => {
-  const email = phoneOrEmailInput.value;
-  const password = passwordInput.value;
-
+signUpBtn.onclick = () => {
+  const email = document.getElementById("phoneOrEmail").value;
+  const password = document.getElementById("password").value;
   createUserWithEmailAndPassword(auth, email, password)
     .then(() => {
-      alert("Account created");
-      authSection.classList.add("hidden");
-      forumSection.classList.remove("hidden");
+      alert("Signed up successfully");
+      showForum();
     })
-    .catch(error => {
-      alert("Signup Error: " + error.message);
-    });
-});
+    .catch(err => alert(err.message));
+};
 
-// Login
-loginBtn.addEventListener("click", () => {
-  const email = phoneOrEmailInput.value;
-  const password = passwordInput.value;
-
+loginBtn.onclick = () => {
+  const email = document.getElementById("phoneOrEmail").value;
+  const password = document.getElementById("password").value;
   signInWithEmailAndPassword(auth, email, password)
     .then(() => {
-      alert("Logged in!");
-      authSection.classList.add("hidden");
-      forumSection.classList.remove("hidden");
+      alert("Logged in successfully");
+      showForum();
     })
-    .catch(error => {
-      alert("Login Error: " + error.message);
-    });
-});
+    .catch(err => alert(err.message));
+};
 
-// Logout
-logoutBtn.addEventListener("click", () => {
+logoutBtn.onclick = () => {
   signOut(auth).then(() => {
-    authSection.classList.remove("hidden");
-    forumSection.classList.add("hidden");
+    showAuth();
   });
-});
+};
 
-// Post creation
-postBtn.addEventListener("click", async () => {
+postBtn.onclick = () => {
   const text = postInput.value.trim();
   const file = mediaInput.files[0];
 
   if (!text && !file) {
-    alert("Enter text or select media.");
+    alert("Write something or add media.");
     return;
   }
 
-  let mediaUrl = null;
   if (file) {
-    mediaUrl = await uploadToCloudinary(file);
+    uploadToCloudinary(file, (url) => savePost(text, url));
+  } else {
+    savePost(text, null);
   }
 
-  const postRef = ref(database, "posts/");
-  const postData = {
+  postInput.value = "";
+  mediaInput.value = "";
+};
+
+function savePost(text, mediaUrl) {
+  const postRef = ref(db, 'posts/');
+  const data = {
     text,
     media: mediaUrl,
     timestamp: Date.now()
   };
-  push(postRef, postData);
+  push(postRef, data);
+}
 
-  postInput.value = "";
-  mediaInput.value = "";
-});
+function loadPosts() {
+  const postRef = ref(db, 'posts/');
+  onValue(postRef, (snapshot) => {
+    postsContainer.innerHTML = "";
+    const posts = snapshot.val();
+    if (posts) {
+      Object.values(posts).reverse().forEach(post => {
+        const el = document.createElement("div");
+        el.className = "post";
+        el.innerHTML = `
+          <p>${post.text}</p>
+          ${post.media ? (post.media.includes("video") ?
+            `<video controls src="${post.media}" width="100%"></video>` :
+            `<img src="${post.media}" width="100%">`) : ""}
+          <small>${new Date(post.timestamp).toLocaleString()}</small>
+        `;
+        postsContainer.appendChild(el);
+      });
+    }
+  });
+}
 
-// Load posts
-const postRef = ref(database, "posts/");
-onValue(postRef, snapshot => {
-  postsContainer.innerHTML = "";
-  const posts = snapshot.val();
-  if (posts) {
-    Object.values(posts).reverse().forEach(post => {
-      const div = document.createElement("div");
-      div.className = "post";
-      div.innerHTML = `
-        <p>${post.text}</p>
-        ${post.media ? (post.media.includes("video") ? `<video controls src="${post.media}" width="100%"></video>` : `<img src="${post.media}" width="100%">`) : ""}
-        <small>${new Date(post.timestamp).toLocaleString()}</small>
-      `;
-      postsContainer.appendChild(div);
-    });
-  }
+function showForum() {
+  authSection.classList.add("hidden");
+  forumSection.classList.remove("hidden");
+  loadPosts();
+}
+
+function showAuth() {
+  authSection.classList.remove("hidden");
+  forumSection.classList.add("hidden");
+}
+
+window.onload = () => {
+  auth.onAuthStateChanged(user => {
+    if (user) showForum();
+    else showAuth();
+  });
+};
+
+// Dark mode toggle
+document.getElementById("darkToggle").addEventListener("click", () => {
+  document.body.classList.toggle("dark");
 });
