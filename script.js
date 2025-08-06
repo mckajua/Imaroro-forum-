@@ -1,11 +1,13 @@
 // script.js
-import { database, ref, push, onValue, auth, signOut } from './firebase.js';
-import { uploadToCloudinary } from './cloudinary.js';
+import { db, auth } from './js/firebase.js';
+import { ref, push, onValue } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { uploadToCloudinary } from './js/cloudinary.js';
 
-const postInput = document.getElementById("postInput");
-const mediaInput = document.getElementById("mediaInput");
-const postBtn = document.getElementById("postBtn");
-const postsContainer = document.getElementById("postsContainer");
+const postInput = document.getElementById("postContent");
+const mediaInput = document.getElementById("mediaUpload");
+const postBtn = document.getElementById("submitPost");
+const postsContainer = document.getElementById("postFeed");
 const logoutBtn = document.getElementById("logoutBtn");
 
 // Post button
@@ -19,8 +21,11 @@ postBtn.addEventListener("click", () => {
   }
 
   if (file) {
-    uploadToCloudinary(file, (url) => {
+    uploadToCloudinary(file).then(url => {
       savePost(text, url);
+    }).catch(err => {
+      alert("Upload failed");
+      console.error(err);
     });
   } else {
     savePost(text, null);
@@ -31,7 +36,7 @@ postBtn.addEventListener("click", () => {
 });
 
 function savePost(text, mediaUrl) {
-  const postRef = ref(database, 'posts/');
+  const postRef = ref(db, 'posts/');
   const postData = {
     text: text,
     media: mediaUrl,
@@ -41,7 +46,7 @@ function savePost(text, mediaUrl) {
 }
 
 // Load posts
-const postRef = ref(database, 'posts/');
+const postRef = ref(db, 'posts/');
 onValue(postRef, (snapshot) => {
   postsContainer.innerHTML = "";
   const posts = snapshot.val();
@@ -51,9 +56,11 @@ onValue(postRef, (snapshot) => {
       postEl.className = "post";
       postEl.innerHTML = `
         <p>${post.text}</p>
-        ${post.media ? (post.media.includes('video') ? 
-          `<video controls src="${post.media}" width="100%"></video>` : 
-          `<img src="${post.media}" width="100%">`) : ""}
+        ${post.media ? (
+          post.media.includes('.mp4') || post.media.includes('video')
+          ? `<video controls src="${post.media}" width="100%"></video>`
+          : `<img src="${post.media}" width="100%">`
+        ) : ""}
         <small>${new Date(post.timestamp).toLocaleString()}</small>
       `;
       postsContainer.appendChild(postEl);
@@ -61,10 +68,10 @@ onValue(postRef, (snapshot) => {
   }
 });
 
-// Logout button
+// Logout
 logoutBtn.addEventListener("click", () => {
   signOut(auth).then(() => {
     alert("Signed out!");
-    window.location.href = "login.html"; // You can change this
+    location.reload();
   });
 });
