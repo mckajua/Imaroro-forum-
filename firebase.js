@@ -8,8 +8,9 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 import {
   getAuth,
-  signOut,
-  onAuthStateChanged
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
@@ -24,7 +25,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const database = getDatabase(app);
+const db = getDatabase(app);
 const auth = getAuth(app);
 
-export { database, ref, push, onValue, auth, signOut, onAuthStateChanged };
+export { db, ref, push, onValue, auth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut };
