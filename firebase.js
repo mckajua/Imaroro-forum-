@@ -1,10 +1,17 @@
-// Import Firebase SDK scripts
+// firebase.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { getDatabase } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-import { getStorage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+import {
+  getDatabase,
+  ref,
+  push,
+  onValue
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+  getAuth,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-// Your Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAX9lNYwkOqkIn0LQp-y3j2vW66M1c9m_4",
   authDomain: "imaroro-ward-residents-f-fdb79.firebaseapp.com",
@@ -16,10 +23,8 @@ const firebaseConfig = {
   measurementId: "G-VM5E905VHB"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const database = getDatabase(app);
+const auth = getAuth(app);
 
-// Export Firebase services
-export const auth = getAuth(app);
-export const db = getDatabase(app);
-export const storage = getStorage(app);
+export { database, ref, push, onValue, auth, signOut, onAuthStateChanged };
